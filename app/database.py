@@ -9,32 +9,38 @@ def get_db():
     return conn
 
 def init_db(app):
-    """'leads' tablosunu oluşturur (yoksa)."""
+    """'leads' tablosunu genişletilmiş alanlarla oluşturur (yoksa)."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             isim TEXT NOT NULL,
+            soyisim TEXT,
+            eposta TEXT,
+            alan_kodu TEXT,
             telefon TEXT NOT NULL,
+            butce TEXT,
+            aciklama TEXT,
             mesaj TEXT,
+            durum TEXT DEFAULT 'bekliyor',
             tarih TEXT NOT NULL
         )
     ''')
     conn.commit()
     conn.close()
 
-def lead_ekle(isim, telefon, mesaj=None):
-    """Yeni kayıt ekler. SQL Injection'a karşı ? yer tutucusu kullanır."""
+def lead_ekle(isim, soyisim, eposta, alan_kodu, telefon, butce, aciklama, mesaj=None):
+    """Genişletilmiş alanlarla yeni kayıt ekler. SQL Injection korumalı."""
     tarih = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    durum = "bekliyor" # Varsayılan durum
     conn = get_db()
     cursor = conn.cursor()
     
-    # ? yer tutucuları ve parametreler ile güvenli ekleme işlemi
     cursor.execute('''
-        INSERT INTO leads (isim, telefon, mesaj, tarih)
-        VALUES (?, ?, ?, ?)
-    ''', (isim, telefon, mesaj, tarih))
+        INSERT INTO leads (isim, soyisim, eposta, alan_kodu, telefon, butce, aciklama, mesaj, durum, tarih)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (isim, soyisim, eposta, alan_kodu, telefon, butce, aciklama, mesaj, durum, tarih))
     
     conn.commit()
     conn.close()
@@ -48,5 +54,34 @@ def tum_leadler():
     rows = cursor.fetchall()
     conn.close()
     
-    # sqlite3.Row objelerini JSON serileştirilebilir sözlüklere (dict) çevirme
     return [dict(row) for row in rows]
+
+def lead_durum_guncelle(lead_id, yeni_durum):
+    """Bir lead'in durumunu günceller (onaylandi, reddedildi, bekliyor)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE leads SET durum = ? WHERE id = ?
+    ''', (yeni_durum, lead_id))
+    
+    # Etkilenen satır sayısını kontrol et
+    rowcount = cursor.rowcount
+    conn.commit()
+    conn.close()
+    
+    if rowcount == 0:
+        raise ValueError("Kayıt bulunamadı.")
+    return True
+
+def lead_sil(lead_id):
+    """Bir lead'i veritabanından kalıcı olarak siler."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM leads WHERE id = ?', (lead_id,))
+    rowcount = cursor.rowcount
+    conn.commit()
+    conn.close()
+    
+    if rowcount == 0:
+        raise ValueError("Kayıt bulunamadı.")
+    return True
