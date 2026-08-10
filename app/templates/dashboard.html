@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewNorm AI Yönetim Paneli</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>Müşteri Adayı Yönetim Paneli</h1>
+    <p>Gerçek UI Wix tarafındadır. Bu sayfa Backend routing testleri içindir.</p>
+    
+    <table id="leads-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>İsim</th>
+                <th>Telefon</th>
+                <th>Mesaj</th>
+                <th>Tarih</th>
+            </tr>
+        </thead>
+        <tbody id="leads-body">
+            <tr><td colspan="5">Yükleniyor...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        fetch('/api/leads')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('leads-body');
+                if (data.basari && data.veri.length > 0) {
+                    tbody.innerHTML = '';
+                    data.veri.forEach(lead => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${lead.id}</td>
+                            <td>${lead.isim}</td>
+                            <td>${lead.telefon}</td>
+                            <td>${lead.mesaj || '-'}</td>
+                            <td>${lead.tarih}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5">Kayıt bulunamadı.</td></tr>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('leads-body').innerHTML = '<tr><td colspan="5">Hata oluştu.</td></tr>';
+                console.error(error);
+            });
+    </script>
+</body>
+</html>
