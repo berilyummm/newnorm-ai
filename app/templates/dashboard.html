@@ -1,308 +1,61 @@
 <!DOCTYPE html>
-<html lang="tr" data-theme="light">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NewNorm AI - Yönetim Paneli</title>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>NewNorm AI Yönetim Paneli</title>
     <style>
-        :root {
-            --bg-color: #F8FAFC;
-            --text-color: #0F172A;
-            --primary-color: #4F46E5; 
-            --primary-hover: #4338CA;
-            --card-bg: #FFFFFF;
-            --border-color: #E2E8F0;
-            
-            --success-bg: #DCFCE7;
-            --success-color: #166534;
-            --danger-bg: #FEE2E2;
-            --danger-color: #991B1B;
-            --warning-bg: #FEF9C3;
-            --warning-color: #854D0E;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #0F172A;
-            --text-color: #F8FAFC;
-            --card-bg: #1E293B;
-            --border-color: #334155;
-            
-            --success-bg: rgba(22, 101, 52, 0.3);
-            --success-color: #4ADE80;
-            --danger-bg: rgba(153, 27, 27, 0.3);
-            --danger-color: #F87171;
-            --warning-bg: rgba(133, 77, 14, 0.3);
-            --warning-color: #FACC15;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-        }
-
-        header {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        main {
-            padding: 40px 5%;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            font-size: 28px;
-            margin-bottom: 30px;
-        }
-
-        /* F-PATTERN: Table layout */
-        .table-container {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th, td {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: rgba(0,0,0,0.02);
-            font-weight: 600;
-            font-size: 14px;
-            color: #64748B;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        [data-theme="dark"] th {
-            background-color: rgba(255,255,255,0.02);
-            color: #94A3B8;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .status-bekliyor { background-color: var(--warning-bg); color: var(--warning-color); }
-        .status-onaylandi { background-color: var(--success-bg); color: var(--success-color); }
-        .status-reddedildi { background-color: var(--danger-bg); color: var(--danger-color); }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-action {
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            transition: opacity 0.2s;
-        }
-
-        .btn-action:hover { opacity: 0.8; }
-        
-        .btn-approve { background-color: #10B981; }
-        .btn-reject { background-color: #EF4444; }
-        .btn-hold { background-color: #F59E0B; }
-        .btn-delete { background-color: #374151; }
-
-        .btn-theme {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .empty-state {
-            padding: 40px;
-            text-align: center;
-            color: #64748B;
-        }
+        body { font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #f4f4f4; }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="logo">NewNorm Yönetim</div>
-        <button class="btn-theme" id="btnTheme">Koyu Mod 🌙</button>
-    </header>
-
-    <main>
-        <h1>Müşteri Adayları (Leads)</h1>
-        
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Müşteri</th>
-                        <th>İletişim</th>
-                        <th>Bütçe & Detay</th>
-                        <th>Tarih</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody id="leadsTableBody">
-                    <tr><td colspan="6" class="empty-state">Veriler Yükleniyor...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
+    <h1>Müşteri Adayı Yönetim Paneli</h1>
+    <p>Gerçek UI Wix tarafındadır. Bu sayfa Backend routing testleri içindir.</p>
+    
+    <table id="leads-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>İsim</th>
+                <th>Telefon</th>
+                <th>Mesaj</th>
+                <th>Tarih</th>
+            </tr>
+        </thead>
+        <tbody id="leads-body">
+            <tr><td colspan="5">Yükleniyor...</td></tr>
+        </tbody>
+    </table>
 
     <script>
-        // --- THEME TOGGLE ---
-        const btnTheme = document.getElementById('btnTheme');
-        let isDark = false;
-        btnTheme.addEventListener('click', () => {
-            isDark = !isDark;
-            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-            btnTheme.innerText = isDark ? "Açık Mod ☀️" : "Koyu Mod 🌙";
-        });
-
-        // --- FETCH LEADS ---
-        const leadsTableBody = document.getElementById('leadsTableBody');
-
-        async function fetchLeads() {
-            try {
-                const res = await fetch('/api/leads');
-                const data = await res.json();
-                
-                if(data.basari && data.veri.length > 0) {
-                    renderTable(data.veri);
+        fetch('/api/leads')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('leads-body');
+                if (data.basari && data.veri.length > 0) {
+                    tbody.innerHTML = '';
+                    data.veri.forEach(lead => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${lead.id}</td>
+                            <td>${lead.isim}</td>
+                            <td>${lead.telefon}</td>
+                            <td>${lead.mesaj || '-'}</td>
+                            <td>${lead.tarih}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
                 } else {
-                    leadsTableBody.innerHTML = `<tr><td colspan="6" class="empty-state">Henüz kayıtlı müşteri yok.</td></tr>`;
+                    tbody.innerHTML = '<tr><td colspan="5">Kayıt bulunamadı.</td></tr>';
                 }
-            } catch(e) {
-                leadsTableBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:red;">Veri çekilirken hata oluştu.</td></tr>`;
-            }
-        }
-
-        function renderTable(leads) {
-            leadsTableBody.innerHTML = '';
-            leads.forEach(lead => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <strong>${escapeHTML(lead.isim)} ${escapeHTML(lead.soyisim)}</strong>
-                    </td>
-                    <td>
-                        <div>${escapeHTML(lead.alan_kodu)} ${escapeHTML(lead.telefon)}</div>
-                        <div style="font-size:12px; color:#64748B">${escapeHTML(lead.eposta)}</div>
-                    </td>
-                    <td>
-                        <div style="font-weight:500;">${escapeHTML(lead.butce)}</div>
-                        <div style="font-size:12px; color:#64748B; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHTML(lead.aciklama)}">
-                            ${escapeHTML(lead.aciklama)}
-                        </div>
-                    </td>
-                    <td><div style="font-size:13px;">${lead.tarih.substring(0, 16)}</div></td>
-                    <td>
-                        <span class="status-badge status-${lead.durum}">${lead.durum.toUpperCase()}</span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-action btn-approve" onclick="updateStatus(${lead.id}, 'onaylandi', '${escapeHTML(lead.isim)}', '${escapeHTML(lead.telefon)}')">✔</button>
-                            <button class="btn-action btn-reject" onclick="updateStatus(${lead.id}, 'reddedildi', '${escapeHTML(lead.isim)}', '${escapeHTML(lead.telefon)}')">✖</button>
-                            <button class="btn-action btn-hold" onclick="updateStatus(${lead.id}, 'bekliyor', '${escapeHTML(lead.isim)}', '${escapeHTML(lead.telefon)}')">⏳</button>
-                            <button class="btn-action btn-delete" onclick="deleteLead(${lead.id})">🗑️</button>
-                        </div>
-                    </td>
-                `;
-                leadsTableBody.appendChild(tr);
+            })
+            .catch(error => {
+                document.getElementById('leads-body').innerHTML = '<tr><td colspan="5">Hata oluştu.</td></tr>';
+                console.error(error);
             });
-        }
-
-        async function updateStatus(id, durum, isim, telefon) {
-            if(!confirm(`Bu adayın durumunu '${durum.toUpperCase()}' yapmak istediğinize emin misiniz?`)) return;
-            
-            try {
-                const res = await fetch(`/api/leads/${id}/durum`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ durum, isim, telefon })
-                });
-                const data = await res.json();
-                if(data.basari) fetchLeads(); // Reload
-                else alert("Hata: " + data.hata);
-            } catch(e) {
-                alert("Bağlantı hatası!");
-            }
-        }
-
-        async function deleteLead(id) {
-            if(!confirm("Kayıt tamamen silinecektir. Emin misiniz?")) return;
-            try {
-                const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                if(data.basari) fetchLeads(); // Reload
-                else alert("Hata: " + data.hata);
-            } catch(e) {
-                alert("Bağlantı hatası!");
-            }
-        }
-
-        function escapeHTML(str) {
-            if(!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
-        }
-
-        // Init
-        fetchLeads();
     </script>
 </body>
 </html>
