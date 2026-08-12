@@ -1,9 +1,6 @@
 from app import create_app
 
-# Flask uygulamasını oluştur
-app = create_app()
+app = create_app('default')
 
 if __name__ == '__main__':
-    # Sadece yerel geliştirmede çalışacak kod bloğu
-    # Render (Gunicorn) burayı çalıştırmaz, doğrudan 'app' objesini hedefler.
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, port=5000)
