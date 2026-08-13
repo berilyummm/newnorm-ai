@@ -53,6 +53,6 @@ def lead_ekle_api():
 def lead_getir_api():
     try:
         kayitlar = database.tum_leadler()
-        return jsonify({'basari': True, 'data': kayitlar}), 200
+        return jsonify({'basari': True, 'veri': kayitlar}), 200
     except Exception as e:
         return jsonify({'basari': False, 'hata': 'Kayıtlar alınamadı.'}), 500
