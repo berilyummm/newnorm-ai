@@ -119,6 +119,14 @@
     </div>
 
     <script>
+        function toggleMesaj(element) {
+            if (element.style.whiteSpace === 'normal') {
+                element.style.whiteSpace = 'nowrap';
+            } else {
+                element.style.whiteSpace = 'normal';
+            }
+        }
+
         function durumRengi(durum) {
             if (durum === 'Onaylandı') return 'badge-onaylandi';
             if (durum === 'Reddedildi') return 'badge-reddedildi';
@@ -164,7 +172,7 @@
                             tr.innerHTML = `
                                 <td style="font-weight: 500;">${lead.isim}</td>
                                 <td>${lead.telefon}</td>
-                                <td class="message-cell" title="${lead.mesaj || '-'}">${lead.mesaj || '-'}</td>
+                                <td class="message-cell" onclick="toggleMesaj(this)" title="Okumak için tıklayın">${lead.mesaj || '-'}</td>
                                 <td><span class="badge ${durumRengi(lead.durum || 'Bekliyor')}">${lead.durum || 'Bekliyor'}</span></td>
                                 <td style="color: #6b7280; font-size: 13px;">${tarihStr}</td>
                                 <td>
