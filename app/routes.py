@@ -56,3 +56,23 @@ def lead_getir_api():
         return jsonify({'basari': True, 'veri': kayitlar}), 200
     except Exception as e:
         return jsonify({'basari': False, 'hata': 'Kayıtlar alınamadı.'}), 500
+
+@api_bp.route('/leads/<int:lead_id>/durum', methods=['PUT'])
+def lead_durum_guncelle_api(lead_id):
+    veri = request.get_json()
+    if not veri or 'durum' not in veri:
+        return jsonify({'basari': False, 'hata': 'Durum bilgisi eksik.'}), 400
+        
+    try:
+        database.durum_guncelle(lead_id, veri['durum'])
+        return jsonify({'basari': True, 'mesaj': 'Durum güncellendi.'}), 200
+    except Exception as e:
+        return jsonify({'basari': False, 'hata': 'Veritabanı hatası.'}), 500
+
+@api_bp.route('/leads/<int:lead_id>', methods=['DELETE'])
+def lead_sil_api(lead_id):
+    try:
+        database.lead_sil(lead_id)
+        return jsonify({'basari': True, 'mesaj': 'Kayıt silindi.'}), 200
+    except Exception as e:
+        return jsonify({'basari': False, 'hata': 'Veritabanı hatası.'}), 500

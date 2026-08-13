@@ -18,29 +18,51 @@ def close_db(e=None):
 def init_db(app):
     with app.app_context():
         db = get_db()
-        # Yonergere tam uyumlu, basit yapi (extra kolonlar silindi)
+        # Create table if it doesn't exist (with durum column)
         db.execute('''
             CREATE TABLE IF NOT EXISTS leads (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 isim TEXT NOT NULL,
                 telefon TEXT NOT NULL,
                 mesaj TEXT,
-                tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                durum TEXT DEFAULT 'Bekliyor'
             )
         ''')
+        
+        # In case the table already exists but without 'durum', we add it dynamically
+        try:
+            db.execute("ALTER TABLE leads ADD COLUMN durum TEXT DEFAULT 'Bekliyor'")
+        except sqlite3.OperationalError:
+            pass # Column already exists
+            
         db.commit()
 
 def lead_ekle(isim, telefon, mesaj=None):
     db = get_db()
-    # SQL Injection'a karsi ? (soru isareti) ile koruma (Yonerge zorunlulugu)
     db.execute(
-        'INSERT INTO leads (isim, telefon, mesaj) VALUES (?, ?, ?)',
-        (isim, telefon, mesaj)
+        'INSERT INTO leads (isim, telefon, mesaj, durum) VALUES (?, ?, ?, ?)',
+        (isim, telefon, mesaj, 'Bekliyor')
+    )
+    db.commit()
+
+def durum_guncelle(lead_id, yeni_durum):
+    db = get_db()
+    db.execute(
+        'UPDATE leads SET durum = ? WHERE id = ?',
+        (yeni_durum, lead_id)
+    )
+    db.commit()
+
+def lead_sil(lead_id):
+    db = get_db()
+    db.execute(
+        'DELETE FROM leads WHERE id = ?',
+        (lead_id,)
     )
     db.commit()
 
 def tum_leadler():
     db = get_db()
-    # En yeniden en eskiye dogru (Yonerge sarti)
     satirlar = db.execute('SELECT * FROM leads ORDER BY tarih DESC').fetchall()
     return [dict(satir) for satir in satirlar]
