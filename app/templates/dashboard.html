@@ -141,6 +141,16 @@
     </div>
 
     <script>
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function toggleMesaj(element) {
             element.classList.toggle('expanded');
         }
@@ -211,10 +221,10 @@
                             
                             tr.innerHTML = `
                                 <td><span style="color: #6b7280; font-weight: 500;">#${lead.id}</span></td>
-                                <td style="font-weight: 500;">${lead.isim}</td>
-                                <td>${lead.telefon}</td>
-                                <td class="message-cell" onclick="toggleMesaj(this)" title="Okumak için tıklayın">${lead.mesaj || '-'}</td>
-                                <td><span class="badge ${durumRengi(lead.durum || 'Bekliyor')}">${lead.durum || 'Bekliyor'}</span></td>
+                                <td style="font-weight: 500;">${escapeHTML(lead.isim)}</td>
+                                <td>${escapeHTML(lead.telefon)}</td>
+                                <td class="message-cell" onclick="toggleMesaj(this)" title="Okumak için tıklayın">${escapeHTML(lead.mesaj) || '-'}</td>
+                                <td><span class="badge ${durumRengi(lead.durum || 'Bekliyor')}">${escapeHTML(lead.durum) || 'Bekliyor'}</span></td>
                                 <td style="color: #6b7280; font-size: 13px;">${tarihStr}</td>
                                 <td>
                                     <div class="btn-group">
