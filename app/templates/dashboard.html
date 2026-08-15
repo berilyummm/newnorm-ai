@@ -86,7 +86,8 @@
         .btn-delete { background-color: transparent; color: var(--text-muted); padding: 6px; }
         .btn-delete:hover { color: var(--danger); }
         
-        .message-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+        .message-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: all 0.2s; }
+        .message-cell.expanded { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; background-color: #f9fafb; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
@@ -120,11 +121,7 @@
 
     <script>
         function toggleMesaj(element) {
-            if (element.style.whiteSpace === 'normal') {
-                element.style.whiteSpace = 'nowrap';
-            } else {
-                element.style.whiteSpace = 'normal';
-            }
+            element.classList.toggle('expanded');
         }
 
         function durumRengi(durum) {
@@ -134,6 +131,39 @@
         }
 
         function durumDegistir(id, yeniDurum, telefon, isim) {
+            let mesaj = "";
+            let waUrl = "";
+
+            if (telefon && telefon !== 'Bilinmiyor') {
+                let temizTel = telefon.replace(/\D/g, "");
+                if (temizTel.startsWith("0")) temizTel = "90" + temizTel.substring(1);
+                else if (temizTel.length === 10) temizTel = "90" + temizTel;
+                
+                if (yeniDurum === 'Onaylandı') {
+                    mesaj = `Merhaba ${isim}, formunuz NewNorm AI tarafından başarıyla onaylanmıştır! Talebinizle ilgili en kısa sürede detayları paylaşacağız.`;
+                } else if (yeniDurum === 'Reddedildi') {
+                    mesaj = `Merhaba ${isim}, formunuzu inceledik ancak maalesef şu anki hizmet kriterlerimize/bütçe planlamamıza uygun bulamadığımız için olumlu dönüş yapamıyoruz. İlginize teşekkür ederiz.`;
+                } else if (yeniDurum === 'Bekliyor') {
+                    mesaj = `Merhaba ${isim}, formunuz bize ulaştı. Mevcut yoğunluktan dolayı kaydınızı şu an beklemeye aldık, sıranız geldiğinde sizinle iletişime geçeceğiz.`;
+                }
+                
+                waUrl = `https://wa.me/${temizTel}?text=${encodeURIComponent(mesaj)}`;
+            }
+
+            // 1. Pop-up engelleyiciye takılmamak için tıklama anında hemen onay iste ve aç
+            let onay = confirm(`Durum '${yeniDurum}' yapılacak.\nMüşteriye WhatsApp'tan bilgilendirme mesajı göndermek ister misiniz?`);
+            
+            if (onay && waUrl) {
+                // Senkron olarak hemen aç, böylece tarayıcı reklam sanıp engellemez
+                window.open(waUrl, '_blank');
+            } else if (!onay) {
+                // Kullanıcı WhatsApp göndermek istemiyorsa sadece onaya basar,
+                // Ama durumun değiştiğinden emin olmak için yine de işlemi yapmalıyız
+                let emin = confirm("WhatsApp göndermeden sadece durumu güncellemek istediğinize emin misiniz?");
+                if (!emin) return;
+            }
+
+            // 2. Arka planda sunucuyu güncelle
             fetch(`/api/leads/${id}/durum`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -143,28 +173,8 @@
             .then(data => { 
                 if(data.basari) {
                     veriCek(); 
-                    
-                    // WhatsApp Yönlendirmesi
-                    if (telefon && telefon !== 'Bilinmiyor') {
-                        let temizTel = telefon.replace(/\D/g, "");
-                        if (temizTel.startsWith("0")) temizTel = "90" + temizTel.substring(1);
-                        else if (temizTel.length === 10) temizTel = "90" + temizTel;
-                        
-                        let mesaj = "";
-                        if (yeniDurum === 'Onaylandı') {
-                            mesaj = `Merhaba ${isim}, formunuz NewNorm AI tarafından başarıyla onaylanmıştır! Talebinizle ilgili en kısa sürede detayları paylaşacağız.`;
-                        } else if (yeniDurum === 'Reddedildi') {
-                            mesaj = `Merhaba ${isim}, formunuzu inceledik ancak maalesef şu anki hizmet kriterlerimize/bütçe planlamamıza uygun bulamadığımız için olumlu dönüş yapamıyoruz. İlginize teşekkür ederiz.`;
-                        } else if (yeniDurum === 'Bekliyor') {
-                            mesaj = `Merhaba ${isim}, formunuz bize ulaştı. Mevcut yoğunluktan dolayı kaydınızı şu an beklemeye aldık, sıranız geldiğinde sizinle iletişime geçeceğiz.`;
-                        }
-                        
-                        if (mesaj && confirm(`Durum başarıyla '${yeniDurum}' yapıldı.\nMüşteriye WhatsApp'tan otomatik bilgilendirme mesajı göndermek ister misiniz?`)) {
-                            window.open(`https://wa.me/${temizTel}?text=${encodeURIComponent(mesaj)}`, '_blank');
-                        }
-                    }
                 } else {
-                    alert("Hata: " + data.hata); 
+                    alert("Durum güncellenemedi: " + data.hata); 
                 }
             })
             .catch(err => alert("Bağlantı hatası"));
