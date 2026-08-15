@@ -71,5 +71,6 @@ def lead_sil(lead_id):
 
 def tum_leadler():
     db = get_db()
-    satirlar = db.execute('SELECT * FROM leads ORDER BY tarih DESC').fetchall()
+    # Yönerge: İsteğe bağlı olarak yeni eklenenlerin alta gelmesi için ASC (artan) sıralama yapıldı.
+    satirlar = db.execute('SELECT * FROM leads ORDER BY id ASC').fetchall()
     return [dict(satir) for satir in satirlar]
