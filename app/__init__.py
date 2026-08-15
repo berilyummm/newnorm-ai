@@ -9,7 +9,7 @@ def create_app(config_name='default'):
     app.config.from_object(config[config_name])
     
     # 2. CORS ac (Wix'ten gelen isteklere izin ver)
-    CORS(app, resources={r"/api/*": {"origins": app.config['CORS_ORIGINS']}})
+    CORS(app, resources={r"/api/*": {"origins": app.config['CORS_ORIGINS'], "allow_headers": "*"}})
     
     # 3. Veritabanini baslat (init_db)
     from . import database
