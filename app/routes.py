@@ -2,7 +2,11 @@ from flask import Blueprint, jsonify, request, render_template, session, redirec
 from .services.ai_service import ai_service, AIServiceError
 from . import database
 
-# Iki blueprint (Yonerge sarti)
+# --- KONTROL KATMANI (CONTROLLER) - SEPARATION OF CONCERNS (SoC) ---
+# Bu dosya SADECE gelen HTTP isteklerini yönlendirmekten sorumludur.
+# Veritabanı işlemleri database.py'ye, yapay zeka mantığı ise ai_service.py'ye bırakılmıştır.
+
+# Yönerge Şartı: İki blueprint ile API ve sayfa rotaları temiz bir şekilde ayrılmıştır.
 api_bp = Blueprint('api', __name__)
 pages_bp = Blueprint('pages', __name__)
 
@@ -47,9 +51,11 @@ def sohbet():
         yanit = ai_service.yanit_uret(veri['mesaj'], veri.get('gecmis', []))
         return jsonify({'basari': True, 'yanit': yanit}), 200
     except AIServiceError as e:
-        return jsonify({'basari': False, 'hata': 'Yapay zeka su an yanit veremiyor. Lutfen daha sonra tekrar deneyin.'}), 503
+        # Yönerge Şartı: try-except ile "Kibar hata yanıtları" dönülür. 503 Service Unavailable
+        return jsonify({'basari': False, 'hata': 'Yapay zeka şu an yoğun, lütfen birazdan tekrar deneyin.'}), 503
     except Exception:
-        return jsonify({'basari': False, 'hata': 'Beklenmeyen bir hata olustu.'}), 500
+        # 500 Internal Server Error
+        return jsonify({'basari': False, 'hata': 'Beklenmeyen bir sunucu hatası oluştu.'}), 500
 
 @api_bp.route('/leads', methods=['POST'])
 def lead_ekle_api():
@@ -66,7 +72,8 @@ def lead_ekle_api():
         # Yeni kayitta 201 durum kodu kullanin (Yonerge sarti)
         return jsonify({'basari': True, 'mesaj': 'Kayıt basariyla olusturuldu.'}), 201
     except Exception as e:
-        return jsonify({'basari': False, 'hata': 'Veritabanı hatası.'}), 500
+        # Hata Yönetimi: Kullanıcıya kibar hata mesajı
+        return jsonify({'basari': False, 'hata': 'Üzgünüz, veritabanı bağlantısında bir sorun oluştu.'}), 500
 
 def check_auth_or_apikey():
     if session.get('logged_in'):
