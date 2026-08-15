@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'varsayilan_gizli_anahtar')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'n3wN0rm_s3cr3t_2026!aX9qP')
     DATABASE_URL = os.environ.get('DATABASE_URL', 'leads.db')
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
     AI_PROVIDER = os.environ.get('AI_PROVIDER', 'groq')
