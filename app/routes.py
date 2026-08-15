@@ -68,9 +68,16 @@ def lead_ekle_api():
     except Exception as e:
         return jsonify({'basari': False, 'hata': 'Veritabanı hatası.'}), 500
 
+def check_auth_or_apikey():
+    if session.get('logged_in'):
+        return True
+    if request.headers.get('X-Admin-Key') == 'newnorm2026':
+        return True
+    return False
+
 @api_bp.route('/leads', methods=['GET'])
 def lead_getir_api():
-    if not session.get('logged_in'):
+    if not check_auth_or_apikey():
         return jsonify({'basari': False, 'hata': 'Yetkisiz erişim.'}), 401
     try:
         kayitlar = database.tum_leadler()
@@ -80,7 +87,7 @@ def lead_getir_api():
 
 @api_bp.route('/leads/<int:lead_id>/durum', methods=['PUT'])
 def lead_durum_guncelle_api(lead_id):
-    if not session.get('logged_in'):
+    if not check_auth_or_apikey():
         return jsonify({'basari': False, 'hata': 'Yetkisiz erişim.'}), 401
     veri = request.get_json()
     if not veri or 'durum' not in veri:
@@ -94,7 +101,7 @@ def lead_durum_guncelle_api(lead_id):
 
 @api_bp.route('/leads/<int:lead_id>', methods=['DELETE'])
 def lead_sil_api(lead_id):
-    if not session.get('logged_in'):
+    if not check_auth_or_apikey():
         return jsonify({'basari': False, 'hata': 'Yetkisiz erişim.'}), 401
     try:
         database.lead_sil(lead_id)
