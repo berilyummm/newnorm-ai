@@ -133,14 +133,40 @@
             return 'badge-bekliyor';
         }
 
-        function durumDegistir(id, yeniDurum) {
+        function durumDegistir(id, yeniDurum, telefon, isim) {
             fetch(`/api/leads/${id}/durum`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ durum: yeniDurum })
             })
             .then(res => res.json())
-            .then(data => { if(data.basari) veriCek(); else alert("Hata: " + data.hata); })
+            .then(data => { 
+                if(data.basari) {
+                    veriCek(); 
+                    
+                    // WhatsApp Yönlendirmesi
+                    if (telefon && telefon !== 'Bilinmiyor') {
+                        let temizTel = telefon.replace(/\D/g, "");
+                        if (temizTel.startsWith("0")) temizTel = "90" + temizTel.substring(1);
+                        else if (temizTel.length === 10) temizTel = "90" + temizTel;
+                        
+                        let mesaj = "";
+                        if (yeniDurum === 'Onaylandı') {
+                            mesaj = `Merhaba ${isim}, formunuz NewNorm AI tarafından başarıyla onaylanmıştır! Talebinizle ilgili en kısa sürede detayları paylaşacağız.`;
+                        } else if (yeniDurum === 'Reddedildi') {
+                            mesaj = `Merhaba ${isim}, formunuzu inceledik ancak maalesef şu anki hizmet kriterlerimize/bütçe planlamamıza uygun bulamadığımız için olumlu dönüş yapamıyoruz. İlginize teşekkür ederiz.`;
+                        } else if (yeniDurum === 'Bekliyor') {
+                            mesaj = `Merhaba ${isim}, formunuz bize ulaştı. Mevcut yoğunluktan dolayı kaydınızı şu an beklemeye aldık, sıranız geldiğinde sizinle iletişime geçeceğiz.`;
+                        }
+                        
+                        if (mesaj && confirm(`Durum başarıyla '${yeniDurum}' yapıldı.\nMüşteriye WhatsApp'tan otomatik bilgilendirme mesajı göndermek ister misiniz?`)) {
+                            window.open(`https://wa.me/${temizTel}?text=${encodeURIComponent(mesaj)}`, '_blank');
+                        }
+                    }
+                } else {
+                    alert("Hata: " + data.hata); 
+                }
+            })
             .catch(err => alert("Bağlantı hatası"));
         }
 
@@ -177,9 +203,9 @@
                                 <td style="color: #6b7280; font-size: 13px;">${tarihStr}</td>
                                 <td>
                                     <div class="btn-group">
-                                        <button class="btn btn-approve" title="Onayla" onclick="durumDegistir(${lead.id}, 'Onaylandı')">✅</button>
-                                        <button class="btn btn-wait" title="Beklemeye Al" onclick="durumDegistir(${lead.id}, 'Bekliyor')">⏳</button>
-                                        <button class="btn btn-reject" title="Reddet" onclick="durumDegistir(${lead.id}, 'Reddedildi')">❌</button>
+                                        <button class="btn btn-approve" title="Onayla" onclick="durumDegistir(${lead.id}, 'Onaylandı', '${lead.telefon}', '${lead.isim}')">✅</button>
+                                        <button class="btn btn-wait" title="Beklemeye Al" onclick="durumDegistir(${lead.id}, 'Bekliyor', '${lead.telefon}', '${lead.isim}')">⏳</button>
+                                        <button class="btn btn-reject" title="Reddet" onclick="durumDegistir(${lead.id}, 'Reddedildi', '${lead.telefon}', '${lead.isim}')">❌</button>
                                         <button class="btn btn-delete" title="Sil" onclick="kayitSil(${lead.id})">🗑️</button>
                                     </div>
                                 </td>
