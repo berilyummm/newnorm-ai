@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, session, redirect, url_for
 from .services.ai_service import ai_service, AIServiceError
 from . import database
 
@@ -13,7 +13,26 @@ def index():
 
 @pages_bp.route('/dashboard')
 def dashboard():
+    if not session.get('logged_in'):
+        return redirect(url_for('pages.login'))
     return render_template('dashboard.html')
+
+@pages_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        kullanici = request.form.get('username')
+        sifre = request.form.get('password')
+        if kullanici == 'admin' and sifre == 'newnorm':
+            session['logged_in'] = True
+            return redirect(url_for('pages.dashboard'))
+        else:
+            return render_template('login.html', hata="Hatalı kullanıcı adı veya şifre!")
+    return render_template('login.html')
+
+@pages_bp.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('pages.login'))
 
 # --- API UÇ NOKTALARI (API) ---
 
@@ -51,6 +70,8 @@ def lead_ekle_api():
 
 @api_bp.route('/leads', methods=['GET'])
 def lead_getir_api():
+    if not session.get('logged_in'):
+        return jsonify({'basari': False, 'hata': 'Yetkisiz erişim.'}), 401
     try:
         kayitlar = database.tum_leadler()
         return jsonify({'basari': True, 'veri': kayitlar}), 200
@@ -59,6 +80,8 @@ def lead_getir_api():
 
 @api_bp.route('/leads/<int:lead_id>/durum', methods=['PUT'])
 def lead_durum_guncelle_api(lead_id):
+    if not session.get('logged_in'):
+        return jsonify({'basari': False, 'hata': 'Yetkisiz erişim.'}), 401
     veri = request.get_json()
     if not veri or 'durum' not in veri:
         return jsonify({'basari': False, 'hata': 'Durum bilgisi eksik.'}), 400
@@ -71,6 +94,8 @@ def lead_durum_guncelle_api(lead_id):
 
 @api_bp.route('/leads/<int:lead_id>', methods=['DELETE'])
 def lead_sil_api(lead_id):
+    if not session.get('logged_in'):
+        return jsonify({'basari': False, 'hata': 'Yetkisiz erişim.'}), 401
     try:
         database.lead_sil(lead_id)
         return jsonify({'basari': True, 'mesaj': 'Kayıt silindi.'}), 200
