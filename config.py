@@ -10,6 +10,10 @@ class Config:
     AI_PROVIDER = os.environ.get('AI_PROVIDER', 'groq')
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
     
+    # Çapraz site iframe (Wix) içinde session cookielerinin çalışması için:
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True
+    
     # NewNorm Proje Baslatma Belgesi referans alinarak hazirlanmistir.
     BUSINESS_CONTEXT = """Senin adın Nomi. Sen NewNorm şirketinin profesyonel, uzman ve vizyoner yapay zeka iç mimarısın.
 NewNorm, küçük metrekareleri (stüdyo daire, yurt odası, dar yaşam alanları) maksimum verimlilikle estetik ve fonksiyonel alanlara dönüştüren profesyonel bir dekorasyon platformudur.
