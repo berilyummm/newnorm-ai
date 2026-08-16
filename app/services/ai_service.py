@@ -9,7 +9,7 @@ class AIService:
     def _get_system_prompt(self):
         return current_app.config['BUSINESS_CONTEXT']
 
-    def yanit_uret(self, mesaj, gecmis=None):
+    def yanit_uret(self, mesaj, gecmis=None, dil="Türkçe"):
         api_key = current_app.config.get('GROQ_API_KEY')
         
         # Eger anahtar yoksa demo mesaji don (Yonerge sarti)
@@ -19,8 +19,10 @@ class AIService:
         if gecmis is None:
             gecmis = []
             
-        # 1. Once sistem talimati
-        messages = [{"role": "system", "content": self._get_system_prompt()}]
+        # 1. Once sistem talimati (Dil destegi eklendi)
+        system_prompt = self._get_system_prompt()
+        system_prompt += f"\n\nÖNEMLİ: Ziyaretçi hangi dilde konuşursa konuşsun veya sen kim olursan ol, daima {dil} dilinde yanıt vermelisin."
+        messages = [{"role": "system", "content": system_prompt}]
         
         # 2. Sonra gecmis mesajlar
         for g_msg in gecmis:

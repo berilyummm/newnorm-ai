@@ -47,8 +47,11 @@ def sohbet():
         return jsonify({'basari': False, 'hata': 'Mesaj eksik.'}), 400
         
     try:
+        # Wix'ten gelen 'dil' parametresini al, gelmezse Türkçe (veya sitenin ana dili) kabul et
+        dil = veri.get('dil', 'Türkçe')
+        
         # AI cagrilarini try-except ile sar (Yonerge sarti)
-        yanit = ai_service.yanit_uret(veri['mesaj'], veri.get('gecmis', []))
+        yanit = ai_service.yanit_uret(veri['mesaj'], veri.get('gecmis', []), dil=dil)
         return jsonify({'basari': True, 'yanit': yanit}), 200
     except AIServiceError as e:
         # Yönerge Şartı: try-except ile "Kibar hata yanıtları" dönülür. 503 Service Unavailable
