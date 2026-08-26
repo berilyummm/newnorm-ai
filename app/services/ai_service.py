@@ -42,7 +42,7 @@ class AIService:
                 "model": "qwen/qwen3.8-27b",
                 "messages": messages,
                 "temperature": 0.5,
-                "max_tokens": 150
+                "max_tokens": 300
             }
             
             response = requests.post(
