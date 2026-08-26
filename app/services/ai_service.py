@@ -39,10 +39,10 @@ class AIService:
             }
             
             data = {
-                "model": "llama-3.1-8b-instant",
+                "model": "qwen/qwen3.8-27b",
                 "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 1024
+                "temperature": 0.5,
+                "max_tokens": 150
             }
             
             response = requests.post(

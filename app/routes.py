@@ -15,6 +15,10 @@ pages_bp = Blueprint('pages', __name__)
 def index():
     return render_template('index.html')
 
+@pages_bp.route('/chat')
+def chat():
+    return render_template('chat.html')
+
 @pages_bp.route('/dashboard')
 def dashboard():
     if not session.get('logged_in'):
