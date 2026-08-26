@@ -39,14 +39,14 @@ class AIService:
             }
             
             data = {
-                "model": "llama-3.1-8b-instant",
+                "model": "openai/gpt-oss-120b",
                 "messages": messages,
                 "temperature": 0.7,
                 "max_tokens": 1024
             }
             
             response = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
+                "https://api.groq.com/openai/v1",
                 headers=headers,
                 json=data,
                 timeout=15
