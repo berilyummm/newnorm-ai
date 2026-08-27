@@ -1,10 +1,30 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template, redirect, url_for
 from .services.ai_service import ai_service, AIServiceError
 from . import database
 
 api_bp = Blueprint('api', __name__)
-pages_bp = Blueprint('pages', __name__) 
+pages_bp = Blueprint('pages', __name__)
 
+# ==========================================
+# 1. HTML SAYFALARI (ŞİFRESİZ DASHBOARD)
+# ==========================================
+@pages_bp.route('/')
+def index():
+    return render_template('index.html')
+
+@pages_bp.route('/chat')
+def chat():
+    return render_template('chat.html')
+
+@pages_bp.route('/dashboard')
+def dashboard():
+    # DİKKAT: Şifre (login) kontrolü tamamen KALDIRILDI. Direkt açılacak.
+    return render_template('dashboard.html')
+
+
+# ==========================================
+# 2. WIX İÇİN API UÇ NOKTALARI
+# ==========================================
 @api_bp.route('/sohbet', methods=['POST', 'OPTIONS'])
 def sohbet():
     if request.method == 'OPTIONS':
