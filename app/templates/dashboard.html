@@ -19,16 +19,8 @@
             padding: 40px 20px; 
             margin: 0;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 28px; font-weight: 600; color: var(--primary); }
         .card {
             background-color: var(--card-bg);
@@ -39,29 +31,32 @@
         }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 16px 24px; border-bottom: 1px solid #e5e7eb; }
-        th { 
-            background-color: #f9fafb; 
-            font-size: 13px; 
-            text-transform: uppercase; 
-            color: var(--text-muted);
-            font-weight: 600;
-        }
+        th { background-color: #f9fafb; font-size: 13px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
         td { font-size: 15px; }
         tr:hover { background-color: #f9fafb; }
+        
         .badge {
-            padding: 6px 12px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 600;
-            background-color: #fef3c7; color: #b45309;
+            padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;
+            background-color: #e5e7eb; color: #374151; display: inline-block;
         }
+        .badge-Onaylandı { background-color: #d1fae5; color: #047857; }
+        .badge-Reddedildi { background-color: #fee2e2; color: #b91c1c; }
+        .badge-Bekliyor { background-color: #fef3c7; color: #b45309; }
+
+        /* Buton Tasarımları */
+        .action-buttons { display: flex; gap: 8px; align-items: center; }
+        .action-buttons button, .action-buttons a {
+            background: #f3f4f6; border: 1px solid #d1d5db; padding: 6px 10px;
+            border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 16px;
+            transition: all 0.2s;
+        }
+        .action-buttons button:hover, .action-buttons a:hover { background: #e5e7eb; transform: scale(1.05); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>NewNorm Müşteri Paneli</h1>
-            <!-- Çıkış Yap butonu buradan tamamen silindi -->
         </div>
 
         <div class="card">
@@ -74,44 +69,82 @@
                         <th>Mesaj</th>
                         <th>Tarih</th>
                         <th>Durum</th>
+                        <th>İşlemler (Onay/WP)</th>
                     </tr>
                 </thead>
                 <tbody id="leadsTableBody">
-                    <tr><td colspan="6" style="text-align:center;">Veriler yükleniyor...</td></tr>
+                    <tr><td colspan="7" style="text-align:center;">Veriler yükleniyor...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // API'den verileri çekip tabloya doldurma
-        fetch('/api/leads')
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.getElementById('leadsTableBody');
-                tbody.innerHTML = '';
-                
-                if(data.basari && data.leads.length > 0) {
-                    data.leads.forEach((lead, index) => {
-                        const tarih = new Date(lead.tarih).toLocaleString('tr-TR');
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${lead.isim}</td>
-                                <td>${lead.telefon}</td>
-                                <td>${lead.mesaj}</td>
-                                <td>${tarih}</td>
-                                <td><span class="badge">${lead.onay_durumu}</span></td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Henüz hiç müşteri kaydı yok.</td></tr>';
-                }
+        function verileriCek() {
+            fetch('/api/leads')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('leadsTableBody');
+                    tbody.innerHTML = '';
+                    
+                    if(data.basari && data.leads.length > 0) {
+                        data.leads.forEach((lead, index) => {
+                            const tarih = new Date(lead.tarih).toLocaleString('tr-TR');
+                            
+                            // WhatsApp Metni Hazırlama
+                            let numara = lead.telefon.replace(/\\D/g, ''); 
+                            if(numara.length === 10) numara = "90" + numara;
+                            
+                            let mesaj = "";
+                            if (lead.onay_durumu === "Onaylandı") {
+                                mesaj = `Merhaba ${lead.isim}, NewNorm'a hoş geldiniz! İç mimari planınız onaylandı.`;
+                            } else if (lead.onay_durumu === "Reddedildi") {
+                                mesaj = `Merhaba ${lead.isim}, maalesef başvurunuz şu aşamada onaylanamadı.`;
+                            } else {
+                                mesaj = `Merhaba ${lead.isim}, NewNorm başvurunuz sistemimize ulaştı. Tasarım ekibimiz şu an talebinizi inceliyor.`;
+                            }
+                            const waLink = `https://wa.me/${numara}?text=${encodeURIComponent(mesaj)}`;
+
+                            // Tablo Satırlarını Oluşturma (İkonlar burada gömülü)
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${lead.isim}</td>
+                                    <td>${lead.telefon}</td>
+                                    <td>${lead.mesaj}</td>
+                                    <td>${tarih}</td>
+                                    <td><span class="badge badge-${lead.onay_durumu.replace(/\\s+/g, '')}">${lead.onay_durumu}</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button onclick="durumGuncelle(${lead.id}, 'Onaylandı')" title="Onayla">✅</button>
+                                            <button onclick="durumGuncelle(${lead.id}, 'Reddedildi')" title="Reddet">❌</button>
+                                            <button onclick="durumGuncelle(${lead.id}, 'Bekliyor')" title="Beklet">⏳</button>
+                                            <a href="${waLink}" target="_blank" title="WhatsApp'tan Yaz">💬</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Henüz hiç müşteri kaydı yok.</td></tr>';
+                    }
+                });
+        }
+
+        function durumGuncelle(id, yeniDurum) {
+            // Tıklandığı an API'ye istek gönder
+            fetch(`/api/leads/${id}/durum`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ durum: yeniDurum })
             })
-            .catch(err => {
-                document.getElementById('leadsTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Veri çekilirken hata oluştu.</td></tr>';
+            .then(() => {
+                verileriCek(); // Başarılı olunca tabloyu hemen yenile
             });
+        }
+
+        // Sayfa açıldığında verileri otomatik çek
+        verileriCek();
     </script>
 </body>
 </html>
