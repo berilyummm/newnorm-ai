@@ -7,9 +7,6 @@
     <style>
         :root {
             --primary: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --text-main: #1f2937;
@@ -32,12 +29,13 @@
             align-items: center;
             margin-bottom: 30px;
         }
-        h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        h1 { margin: 0; font-size: 28px; font-weight: 600; color: var(--primary); }
         .card {
             background-color: var(--card-bg);
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            padding: 20px;
         }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 16px 24px; border-bottom: 1px solid #e5e7eb; }
@@ -45,210 +43,75 @@
             background-color: #f9fafb; 
             font-size: 13px; 
             text-transform: uppercase; 
-            letter-spacing: 0.05em; 
             color: var(--text-muted);
             font-weight: 600;
         }
         td { font-size: 15px; }
-        tr:last-child td { border-bottom: none; }
         tr:hover { background-color: #f9fafb; }
-        
         .badge {
             padding: 6px 12px;
             border-radius: 9999px;
             font-size: 12px;
             font-weight: 600;
-            display: inline-block;
+            background-color: #fef3c7; color: #b45309;
         }
-        .badge-bekliyor { background-color: #fef3c7; color: #b45309; }
-        .badge-onaylandi { background-color: #d1fae5; color: #047857; }
-        .badge-reddedildi { background-color: #fee2e2; color: #b91c1c; }
-        
-        .btn-group { display: flex; gap: 8px; }
-        .btn {
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-approve { background-color: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
-        .btn-approve:hover { background-color: #d1fae5; }
-        
-        .btn-reject { background-color: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
-        .btn-reject:hover { background-color: #fee2e2; }
-        
-        .btn-wait { background-color: #fffbeb; color: var(--warning); border: 1px solid #fde68a; }
-        .btn-wait:hover { background-color: #fef3c7; }
-        
-        .btn-delete { background-color: transparent; color: var(--text-muted); padding: 6px; }
-        .btn-delete:hover { color: var(--danger); }
-        
-        .message-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: all 0.2s; }
-        .message-cell.expanded { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; background-color: #f9fafb; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal-content h3 { margin-top: 0; color: var(--text-main); font-size: 20px; }
-        .modal-actions { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div>
-                <h1>Müşteri Adayı Yönetim Paneli</h1>
-                <p style="color: var(--text-muted); margin-top: 5px;">Gelen tüm potansiyel müşteri formlarını buradan yönetin.</p>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn" style="background: var(--primary); color: white; padding: 10px 20px;" onclick="veriCek()">Yenile</button>
-                <a href="/logout" class="btn" style="background: var(--danger); color: white; padding: 10px 20px; text-decoration: none;">Çıkış Yap</a>
-            </div>
+            <h1>NewNorm Müşteri Paneli</h1>
+            <!-- Çıkış Yap butonu buradan tamamen silindi -->
         </div>
-        
+
         <div class="card">
-            <table id="leads-table">
+            <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>İsim</th>
+                        <th>Sıra</th>
+                        <th>İsim Soyisim</th>
                         <th>Telefon</th>
                         <th>Mesaj</th>
-                        <th>Durum</th>
                         <th>Tarih</th>
-                        <th>İşlemler</th>
+                        <th>Durum</th>
                     </tr>
                 </thead>
-                <tbody id="leads-body">
-                    <tr><td colspan="7" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                <tbody id="leadsTableBody">
+                    <tr><td colspan="6" style="text-align:center;">Veriler yükleniyor...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Silme Onay Modalı -->
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <h3>Silme Onayı</h3>
-            <p style="color: var(--text-muted);">Bu kaydı tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
-            <div class="modal-actions">
-                <button class="btn" style="background:#f3f4f6; color:#374151; padding: 10px 20px;" onclick="kapatModal()">İptal</button>
-                <button class="btn" style="background:#ef4444; color:white; padding: 10px 20px;" id="confirmDeleteBtn">Sil</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.toString()
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        function toggleMesaj(element) {
-            element.classList.toggle('expanded');
-        }
-
-        function durumRengi(durum) {
-            if (durum === 'Onaylandı') return 'badge-onaylandi';
-            if (durum === 'Reddedildi') return 'badge-reddedildi';
-            return 'badge-bekliyor';
-        }
-
-        function durumDegistir(id, yeniDurum) {
-            fetch(`/api/leads/${id}/durum`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ durum: yeniDurum })
-            })
-            .then(res => res.json())
-            .then(data => { 
-                if(data.basari) {
-                    veriCek(); 
+        // API'den verileri çekip tabloya doldurma
+        fetch('/api/leads')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('leadsTableBody');
+                tbody.innerHTML = '';
+                
+                if(data.basari && data.leads.length > 0) {
+                    data.leads.forEach((lead, index) => {
+                        const tarih = new Date(lead.tarih).toLocaleString('tr-TR');
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${lead.isim}</td>
+                                <td>${lead.telefon}</td>
+                                <td>${lead.mesaj}</td>
+                                <td>${tarih}</td>
+                                <td><span class="badge">${lead.onay_durumu}</span></td>
+                            </tr>
+                        `;
+                    });
                 } else {
-                    alert("Durum güncellenemedi: " + data.hata); 
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Henüz hiç müşteri kaydı yok.</td></tr>';
                 }
             })
-            .catch(err => alert("Bağlantı hatası"));
-        }
-
-        let silinecekId = null;
-
-        function kayitSil(id) {
-            silinecekId = id;
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function kapatModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            silinecekId = null;
-        }
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if(silinecekId) {
-                fetch(`/api/leads/${silinecekId}`, { method: 'DELETE' })
-                .then(res => res.json())
-                .then(data => { 
-                    if(data.basari) veriCek(); 
-                    else alert("Hata: " + data.hata); 
-                    kapatModal();
-                })
-                .catch(err => { alert("Bağlantı hatası"); kapatModal(); });
-            }
-        });
-
-        function veriCek() {
-            const tbody = document.getElementById('leads-body');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>';
-            
-            fetch('/api/leads')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.basari && data.veri.length > 0) {
-                        tbody.innerHTML = '';
-                        data.veri.forEach(lead => {
-                            const tr = document.createElement('tr');
-                            
-                            // Tarih formatlama (Gün Ay Yıl Saat)
-                            const dateObj = new Date(lead.tarih);
-                            const tarihStr = dateObj.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '');
-                            
-                            tr.innerHTML = `
-                                <td><span style="color: #6b7280; font-weight: 500;">#${lead.id}</span></td>
-                                <td style="font-weight: 500;">${escapeHTML(lead.isim)}</td>
-                                <td>${escapeHTML(lead.telefon)}</td>
-                                <td class="message-cell" onclick="toggleMesaj(this)" title="Okumak için tıklayın">${escapeHTML(lead.mesaj) || '-'}</td>
-                                <td><span class="badge ${durumRengi(lead.durum || 'Bekliyor')}">${escapeHTML(lead.durum) || 'Bekliyor'}</span></td>
-                                <td style="color: #6b7280; font-size: 13px;">${tarihStr}</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-approve" title="Onayla" onclick="durumDegistir(${lead.id}, 'Onaylandı')">✅</button>
-                                        <button class="btn btn-wait" title="Beklemeye Al" onclick="durumDegistir(${lead.id}, 'Bekliyor')">⏳</button>
-                                        <button class="btn btn-reject" title="Reddet" onclick="durumDegistir(${lead.id}, 'Reddedildi')">❌</button>
-                                        <button class="btn btn-delete" title="Sil" onclick="kayitSil(${lead.id})">🗑️</button>
-                                    </div>
-                                </td>
-                            `;
-                            tbody.appendChild(tr);
-                        });
-                    } else {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">Henüz hiç müşteri kaydı yok.</td></tr>';
-                    }
-                })
-                .catch(error => {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #ef4444;">Veriler yüklenirken bir hata oluştu.</td></tr>';
-                    console.error(error);
-                });
-        }
-        
-        // Sayfa yüklendiğinde verileri çek
-        window.onload = veriCek;
+            .catch(err => {
+                document.getElementById('leadsTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Veri çekilirken hata oluştu.</td></tr>';
+            });
     </script>
 </body>
 </html>
