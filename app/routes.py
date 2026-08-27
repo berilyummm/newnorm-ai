@@ -76,3 +76,12 @@ def istatistikler():
     stats = database.istatistikleri_getir()
     stats["basari"] = True
     return jsonify(stats)
+
+@api_bp.route('/leads/<int:lead_id>/durum', methods=['PUT', 'OPTIONS'])
+def durum_guncelle_api(lead_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+    veri = request.get_json()
+    yeni_durum = veri.get('durum')
+    database.durum_guncelle(lead_id, yeni_durum)
+    return jsonify({"basari": True})
