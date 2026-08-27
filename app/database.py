@@ -74,3 +74,8 @@ def tum_leadler():
     # Yönerge: İsteğe bağlı olarak yeni eklenenlerin alta gelmesi için ASC (artan) sıralama yapıldı.
     satirlar = db.execute('SELECT * FROM leads ORDER BY id ASC').fetchall()
     return [dict(satir) for satir in satirlar]
+
+def durum_guncelle(lead_id, yeni_durum):
+    db = get_db()
+    db.execute('UPDATE leads SET onay_durumu = ? WHERE id = ?', (yeni_durum, lead_id))
+    db.commit()
