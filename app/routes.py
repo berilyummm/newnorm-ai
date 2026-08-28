@@ -84,7 +84,7 @@ def sohbet_api():
     
     # 4. Hızlı ve Zeki Gemini 1.5 Flash Modelini Ayarlama
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-1.5-flash-latest",
         system_instruction=sistem_talimati
     )
     
