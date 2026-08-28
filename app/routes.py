@@ -49,3 +49,42 @@ def lead_sil_api(lead_id):
         return '', 200
     database.lead_sil(lead_id)
     return jsonify({"basari": True})
+
+# app/routes.py dosyasının en altına eklenecek kısım:
+
+import random # (Geçici yapay zeka cevapları için)
+
+@api_bp.route('/sohbet', methods=['POST', 'OPTIONS'])
+def sohbet_api():
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    veri = request.get_json()
+    kullanici_mesaji = veri.get('mesaj', '')
+    gecmis = veri.get('gecmis', [])
+    
+    # ---------------------------------------------------------
+    # BURASI NOMI'NIN BEYNİDİR (İleride buraya OpenAI, Gemini vb. 
+    # gerçek bir yapay zeka API'si entegre edeceğiz.)
+    # Şimdilik sistemin çalıştığını test etmek için kural tabanlı cevaplar veriyoruz:
+    # ---------------------------------------------------------
+    
+    kullanici_mesaji_kucuk = kullanici_mesaji.lower()
+    
+    if "fiyat" in kullanici_mesaji_kucuk or "ücret" in kullanici_mesaji_kucuk:
+        yanit = "NewNorm'da iç mimarlık hizmetini lüks olmaktan çıkarıyoruz! Odanızın ölçülerine uygun akıllı yerleşim planlarımız bütçe dostu paketlerle sunulmaktadır."
+    elif "merhaba" in kullanici_mesaji_kucuk or "selam" in kullanici_mesaji_kucuk:
+        yanit = "Merhaba! Ben Nomi. Size küçük alanlarda nasıl daha ferah yaşayabileceğiniz konusunda rehberlik edebilirim. Odanız kaç metrekare?"
+    elif "küçük" in kullanici_mesaji_kucuk or "dar" in kullanici_mesaji_kucuk:
+        yanit = "Küçük alanlarda yaşamak bir mahrumiyet değildir! Size özel katlanabilir mobilya ve akıllı saklama çözümleri önerebilirim."
+    else:
+        # Rastgele genel cevaplar
+        genel_cevaplar = [
+            "Bu harika bir soru! Akıllı yaşam felsefemiz tam da bu konulara odaklanıyor.",
+            "Anlıyorum. Dar alanlardaki psikolojik ferahlığı artırmak için açık renkler ve modüler eşyalar tavsiye ediyoruz.",
+            "Bunu biraz daha detaylandırabilir misiniz? Size en uygun akıllı mobilyayı bulmak isterim."
+        ]
+        yanit = random.choice(genel_cevaplar)
+        
+    # Yanıtı Wix'in anlayacağı şekilde (JSON formatında) Frontend'e geri gönderiyoruz
+    return jsonify({"basari": True, "yanit": yanit})
