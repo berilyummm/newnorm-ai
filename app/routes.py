@@ -97,5 +97,5 @@ def sohbet_api():
         return jsonify({"basari": True, "yanit": yanit})
         
     except Exception as e:
-        print("Nomi AI Hatası:", str(e))
-        return jsonify({"basari": False, "hata": "Nomi şu an düşünüyor ama cevap veremedi."}), 500
+        hata_mesaji = f"Sistem Hatası Detayı: {str(e)}"
+        return jsonify({"basari": True, "yanit": hata_mesaji})
