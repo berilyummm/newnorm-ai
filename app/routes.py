@@ -1,3 +1,5 @@
+import os
+import google.generativeai as genai
 from flask import Blueprint, jsonify, request, render_template
 from . import database
 
@@ -50,9 +52,10 @@ def lead_sil_api(lead_id):
     database.lead_sil(lead_id)
     return jsonify({"basari": True})
 
-# app/routes.py dosyasının en altına eklenecek kısım:
 
-import random # (Geçici yapay zeka cevapları için)
+# ========================================================
+# NOMI AI (GERÇEK YAPAY ZEKA) BAĞLANTISI
+# ========================================================
 
 @api_bp.route('/sohbet', methods=['POST', 'OPTIONS'])
 def sohbet_api():
@@ -61,30 +64,38 @@ def sohbet_api():
         
     veri = request.get_json()
     kullanici_mesaji = veri.get('mesaj', '')
-    gecmis = veri.get('gecmis', [])
     
-    # ---------------------------------------------------------
-    # BURASI NOMI'NIN BEYNİDİR (İleride buraya OpenAI, Gemini vb. 
-    # gerçek bir yapay zeka API'si entegre edeceğiz.)
-    # Şimdilik sistemin çalıştığını test etmek için kural tabanlı cevaplar veriyoruz:
-    # ---------------------------------------------------------
-    
-    kullanici_mesaji_kucuk = kullanici_mesaji.lower()
-    
-    if "fiyat" in kullanici_mesaji_kucuk or "ücret" in kullanici_mesaji_kucuk:
-        yanit = "NewNorm'da iç mimarlık hizmetini lüks olmaktan çıkarıyoruz! Odanızın ölçülerine uygun akıllı yerleşim planlarımız bütçe dostu paketlerle sunulmaktadır."
-    elif "merhaba" in kullanici_mesaji_kucuk or "selam" in kullanici_mesaji_kucuk:
-        yanit = "Merhaba! Ben Nomi. Size küçük alanlarda nasıl daha ferah yaşayabileceğiniz konusunda rehberlik edebilirim. Odanız kaç metrekare?"
-    elif "küçük" in kullanici_mesaji_kucuk or "dar" in kullanici_mesaji_kucuk:
-        yanit = "Küçük alanlarda yaşamak bir mahrumiyet değildir! Size özel katlanabilir mobilya ve akıllı saklama çözümleri önerebilirim."
-    else:
-        # Rastgele genel cevaplar
-        genel_cevaplar = [
-            "Bu harika bir soru! Akıllı yaşam felsefemiz tam da bu konulara odaklanıyor.",
-            "Anlıyorum. Dar alanlardaki psikolojik ferahlığı artırmak için açık renkler ve modüler eşyalar tavsiye ediyoruz.",
-            "Bunu biraz daha detaylandırabilir misiniz? Size en uygun akıllı mobilyayı bulmak isterim."
-        ]
-        yanit = random.choice(genel_cevaplar)
+    # 1. Render'daki "Environment Variables" kısmına eklediğimiz şifreyi alıyoruz
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"basari": True, "yanit": "Sistem hatası: Yapay zeka API anahtarı Render'da bulunamadı! Lütfen ayarlarınızı kontrol edin."})
         
-    # Yanıtı Wix'in anlayacağı şekilde (JSON formatında) Frontend'e geri gönderiyoruz
-    return jsonify({"basari": True, "yanit": yanit})
+    # 2. Yapay zekayı bu şifreyle yetkilendiriyoruz
+    genai.configure(api_key=api_key)
+    
+    # 3. Nomi'nin Kişiliği ve Şirket Kuralları (Sistem İstemi)
+    sistem_talimati = """
+    Senin adın Nomi. Sen 'NewNorm' şirketinin resmi yapay zeka asistanısın.
+    Amacın: Büyük şehirlerde küçük evlerde (1+1, 1+0 vb.) yaşayan insanlara akıllı yaşam tarzı, bütçe dostu modüler mobilya dizilimi ve psikolojik olarak ferah hissettirecek dekorasyon tavsiyeleri vermektir.
+    Kullanıcılara pahalı iç mimarlık hizmetleri yerine zekice ve ekonomik çözümler (örneğin katlanabilir yataklar, çok amaçlı dolaplar, aynalarla derinlik algısı vb.) sunarsın.
+    Her zaman samimi, profesyonel, anlayışlı ve empatik bir dil kullan. Asla başka bir yapay zeka modelinden veya Google'dan bahsetme, sadece "NewNorm Asistanı Nomi" olarak konuş. 
+    Cevaplarını her zaman olabildiğince kısa, net ve okunması kolay (1-2 paragraf) tut.
+    """
+    
+    # 4. Hızlı ve Zeki Gemini 1.5 Flash Modelini Ayarlama
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=sistem_talimati
+    )
+    
+    try:
+        # Nomi mesajı okur ve üretir
+        response = model.generate_content(kullanici_mesaji)
+        yanit = response.text
+        
+        # Sonucu Wix'e geri yolluyoruz
+        return jsonify({"basari": True, "yanit": yanit})
+        
+    except Exception as e:
+        print("Nomi AI Hatası:", str(e))
+        return jsonify({"basari": False, "hata": "Nomi şu an düşünüyor ama cevap veremedi."}), 500
