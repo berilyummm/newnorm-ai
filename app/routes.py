@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+import requests
 from flask import Blueprint, jsonify, request, render_template
 from . import database
 
@@ -54,7 +54,7 @@ def lead_sil_api(lead_id):
 
 
 # ========================================================
-# NOMI AI (GERÇEK YAPAY ZEKA) BAĞLANTISI
+# NOMI AI - GROQ (LLAMA 3) BAĞLANTISI
 # ========================================================
 
 @api_bp.route('/sohbet', methods=['POST', 'OPTIONS'])
@@ -65,33 +65,48 @@ def sohbet_api():
     veri = request.get_json()
     kullanici_mesaji = veri.get('mesaj', '')
     
-    # 1. Render'daki "Environment Variables" kısmına eklediğimiz şifreyi alıyoruz
-    api_key = os.environ.get("GEMINI_API_KEY")
+    # 1. Render'daki GROQ_API_KEY şifresini alıyoruz 
+    # (Eğer ismini değiştirmediyseniz diye GEMINI_API_KEY'i de kontrol ediyoruz)
+    api_key = os.environ.get("GROQ_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        return jsonify({"basari": True, "yanit": "Sistem hatası: Yapay zeka API anahtarı Render'da bulunamadı! Lütfen ayarlarınızı kontrol edin."})
+        return jsonify({"basari": True, "yanit": "Sistem hatası: GROQ API anahtarı Render'da bulunamadı!"})
         
-    # 2. Yapay zekayı bu şifreyle yetkilendiriyoruz
-    genai.configure(api_key=api_key)
+    url = "https://api.groq.com/openai/v1/chat/completions"
     
-    # 3. Nomi'nin Kişiliği ve Şirket Kuralları (Sistem İstemi)
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    # 2. Nomi'nin Kişiliği ve Şirket Kuralları (Sistem İstemi)
     sistem_talimati = """
     Senin adın Nomi. Sen 'NewNorm' şirketinin resmi yapay zeka asistanısın.
     Amacın: Büyük şehirlerde küçük evlerde (1+1, 1+0 vb.) yaşayan insanlara akıllı yaşam tarzı, bütçe dostu modüler mobilya dizilimi ve psikolojik olarak ferah hissettirecek dekorasyon tavsiyeleri vermektir.
     Kullanıcılara pahalı iç mimarlık hizmetleri yerine zekice ve ekonomik çözümler (örneğin katlanabilir yataklar, çok amaçlı dolaplar, aynalarla derinlik algısı vb.) sunarsın.
-    Her zaman samimi, profesyonel, anlayışlı ve empatik bir dil kullan. Asla başka bir yapay zeka modelinden veya Google'dan bahsetme, sadece "NewNorm Asistanı Nomi" olarak konuş. 
+    Her zaman samimi, profesyonel, anlayışlı ve empatik bir dil kullan. Asla başka bir yapay zeka modelinden bahsetme, sadece "NewNorm Asistanı Nomi" olarak konuş. 
     Cevaplarını her zaman olabildiğince kısa, net ve okunması kolay (1-2 paragraf) tut.
     """
     
-    # 4. Hızlı ve Zeki Gemini 1.5 Flash Modelini Ayarlama
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash-latest",
-        system_instruction=sistem_talimati
-    )
+    # 3. Groq üzerinden süper hızlı Llama 3 modelini çağırıyoruz
+    data = {
+        "model": "llama3-8b-8192", 
+        "messages": [
+            {"role": "system", "content": sistem_talimati},
+            {"role": "user", "content": kullanici_mesaji}
+        ],
+        "temperature": 0.7
+    }
     
     try:
-        # Nomi mesajı okur ve üretir
-        response = model.generate_content(kullanici_mesaji)
-        yanit = response.text
+        # Nomi mesajı Groq'a gönderir ve cevabı alır
+        response = requests.post(url, headers=headers, json=data)
+        response_json = response.json()
+        
+        # Eğer API şifresi hatalıysa veya Groq'tan hata gelirse bunu göster
+        if "error" in response_json:
+            return jsonify({"basari": True, "yanit": f"Groq Hatası: {response_json['error']['message']}"})
+            
+        yanit = response_json['choices'][0]['message']['content']
         
         # Sonucu Wix'e geri yolluyoruz
         return jsonify({"basari": True, "yanit": yanit})
