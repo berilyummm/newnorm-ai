@@ -38,7 +38,15 @@ def lead_ekle(isim, telefon, mesaj=None):
 
 def tum_leadler():
     db = get_db()
-    satirlar = db.execute('SELECT * FROM leads ORDER BY id ASC').fetchall()
+    
+    # 30 GÜN KURALI OTOMASYONU:
+    # Durumu 'Silindi' (Çöp kutusunda) olan ve üzerinden 30 günden fazla zaman geçmiş 
+    # kayıtları veritabanından kalıcı olarak temizler.
+    db.execute("DELETE FROM leads WHERE durum = 'Silindi' AND tarih <= datetime('now', '-30 days')")
+    db.commit()
+    
+    # Kalan tüm listeyi getir
+    satirlar = db.execute('SELECT * FROM leads ORDER BY id DESC').fetchall()
     return [dict(satir) for satir in satirlar]
 
 def durum_guncelle(lead_id, yeni_durum):
