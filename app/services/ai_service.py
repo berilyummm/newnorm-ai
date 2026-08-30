@@ -6,9 +6,6 @@ class AIServiceError(Exception):
     pass
 
 class AIService:
-
-    GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-    MODEL = "openai/gpt-oss-120b"
     
     def _get_system_prompt(self):
         return current_app.config['BUSINESS_CONTEXT']
