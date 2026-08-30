@@ -89,7 +89,7 @@ def sohbet_api():
     
     # 3. Groq üzerinden süper hızlı Llama 3 modelini çağırıyoruz
     data = {
-        "model": "llama3-8b-8192", 
+        "model": "openai/gpt-oss-120b", 
         "messages": [
             {"role": "system", "content": sistem_talimati},
             {"role": "user", "content": kullanici_mesaji}
